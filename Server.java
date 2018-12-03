@@ -108,18 +108,7 @@ class ClientHandler extends Thread{
 					size = size2;
 					objectOutToClient.writeObject(parent.fb.sen.get(size - 1));
 					objectOutToClient.flush();
-				}/*
-				while(!inFromClient.ready());
-				Thread.sleep(500);
-				
-				if(inFromClient.readLine().equals("Update")){
-					while(parent.fb.sen.size() <= 0);
-					Thread.sleep(500);
-					
-					for(SensorData s : parent.fb.sen)
-						objectOutToClient.writeObject(s);
-					objectOutToClient.flush();
-				}*/
+				}
 			}
 			
 		} catch (IOException | InterruptedException e) {
