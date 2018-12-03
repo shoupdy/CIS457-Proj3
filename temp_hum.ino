@@ -47,11 +47,13 @@ void loop() {
   int temp = DHT.temperature;
   Serial.print("Temp: ");
   Serial.println(temp);
+  espSerial.print("T");
   espSerial.println(temp);
  
   int hum = DHT.humidity;
   Serial.print("Hum: ");
   Serial.println(hum);
+  espSerial.print("H");
   espSerial.println(hum);
   Serial.println();
 

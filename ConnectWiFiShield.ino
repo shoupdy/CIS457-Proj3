@@ -13,10 +13,10 @@
 #include <string.h>
 
 //Password for hotspot to connect to 
-//const char* ssid = "NETGEAR81";
-//const char* password = "ancientcomet701";
-const char* ssid = "ATT4SUsuI2";
-const char* password = "ct?uyuztadd3";
+const char* ssid = "NETGEAR81";
+const char* password = "ancientcomet701";
+//const char* ssid = "ATT4SUsuI2";
+//const char* password = "ct?uyuztadd3";
 
 //Information to connect to Firebase
 #define FIREBASE_HOST "nodemcu-ac90a.firebaseio.com"
@@ -57,9 +57,7 @@ void setup() {
 
       //Start Firebase
       Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
-}
 
-void loop() {
       bool secure = false;
       
       //Wait for password
@@ -67,6 +65,10 @@ void loop() {
       {
         secure = wait_password();
       }
+}
+
+void loop() {
+
       //Read in from serial
       read_data();
 }
@@ -98,34 +100,41 @@ bool wait_password()
 
 void read_data()
 {
-  int counter = 0; 
-
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
   
   int temperature = 0;
   int humidity = 0;
+  int counter = 0;
   
   while(Serial.available() > 0)
   {
+    Firebase.set("token", "setting");
     int data = Serial.read();  
 
-    if(isDigit(data))
+    if(data == 'T')
     {
-      inString += (char) data;
+      counter = 0;
     }
-
+    if(data == 'H')
+    {
+      counter = 1;
+    }else{
+      if(isDigit(data))
+      {
+        inString += (char) data;
+      }
+    }
+    
     if(data == '\n')
     {
       if(counter == 0)
       {
         temperature = inString.toInt();
   
-        counter++;
       }else{
         humidity = inString.toInt();
-        
-        counter = 0;
+    
       }
       
       //clear the string for new input 
@@ -147,8 +156,5 @@ void read_data()
         Serial.println(Firebase.error());
     }
   }
-    
-
-  delay(5000);
 
 }
