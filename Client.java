@@ -16,6 +16,9 @@ public class Client {
 	private int humidity;
 	private int temperature;
 	private boolean done = false;
+	private DataOutputStream outToServer;
+	private ObjectInputStream objectInFromServer;
+	private Socket connection;
 	
 	@SuppressWarnings("resource")
 	public Client(){
@@ -23,11 +26,11 @@ public class Client {
 		gui.addWindowListener(new Disconnect(gui, this));
 		
 		try {
-		Socket connection = new Socket("localhost",3702);
+		connection = new Socket("localhost",3702);
 		
-		DataOutputStream outToServer = new DataOutputStream(connection.getOutputStream());
+		outToServer = new DataOutputStream(connection.getOutputStream());
 		
-		ObjectInputStream objectInFromServer = new ObjectInputStream(connection.getInputStream());
+		objectInFromServer = new ObjectInputStream(connection.getInputStream());
 		ArrayList<SensorData> sensor = new ArrayList<SensorData>(); //Has all sensor data.
 		while(!done){
 			do{
@@ -61,6 +64,23 @@ public class Client {
 	
 	public static void main(String args[]) throws UnknownHostException, IOException, InterruptedException, ClassNotFoundException{
 		Client cli = new Client();
+		
+	}
+	
+	public void disconnect(){
+		try{
+			outToServer.flush();
+			outToServer.writeBytes("Close\n");
+
+			//Close control socket
+			connection.close();
+
+			//Exit host
+			System.exit(0);
+		}catch(IOException e)
+		{
+			System.out.println("ERROR");
+		}
 	}
 	
 	public void setDone(boolean status)

@@ -90,19 +90,25 @@ class ClientHandler extends Thread{
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		for(SensorData s : parent.fb.sen){
 			
 			try {
-				objectOutToClient.writeObject(s);
+				objectOutToClient.writeObject(parent.fb.sen.get(parent.fb.sen.size()-1));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
+		
 		try {
 			objectOutToClient.flush();
-			
+			int size = parent.fb.sen.size();
 			while(true){
+				Thread.sleep(1000);
+				int size2 = parent.fb.sen.size();
+				if(size2 > size){
+					size = size2;
+					objectOutToClient.writeObject(parent.fb.sen.get(size - 1));
+					objectOutToClient.flush();
+				}/*
 				while(!inFromClient.ready());
 				Thread.sleep(500);
 				
@@ -113,13 +119,10 @@ class ClientHandler extends Thread{
 					for(SensorData s : parent.fb.sen)
 						objectOutToClient.writeObject(s);
 					objectOutToClient.flush();
-				}
+				}*/
 			}
 			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
+		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
