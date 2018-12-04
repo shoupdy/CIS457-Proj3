@@ -101,7 +101,7 @@ class ClientHandler extends Thread{
 		try {
 			objectOutToClient.flush();
 			int size = parent.fb.sen.size();
-			while(true){
+			while(!inFromClient.ready()){
 				Thread.sleep(1000);
 				int size2 = parent.fb.sen.size();
 				if(size2 > size){
@@ -110,6 +110,9 @@ class ClientHandler extends Thread{
 					objectOutToClient.flush();
 				}
 			}
+			inFromClient.close();
+			objectOutToClient.close();
+			connection.close();
 			
 		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block

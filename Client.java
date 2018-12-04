@@ -47,9 +47,7 @@ public class Client {
 			}while(objectInFromServer.available() <= 0);
 				
 		}
-		objectInFromServer.close();
-		outToServer.close();
-		connection.close();
+
 		}catch(IOException e)
 		{
 			
@@ -80,6 +78,7 @@ public class Client {
 		}catch(IOException e)
 		{
 			System.out.println("ERROR");
+			System.exit(0);
 		}
 	}
 	
