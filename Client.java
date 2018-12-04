@@ -1,21 +1,22 @@
-import java.io.BufferedReader;
-import java.io.DataInputStream;
+/*******************************************
+* Client.java
+* CIS 457-01
+* Dylan Shoup
+* Ali Scheffler
+* 
+* This class implements the client side for
+* the IoT system. Gets temperature and 
+* humidity values from server and displays.
+*******************************************/
+
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 public class Client {
-	private int humidity;
-	private int temperature;
-	private boolean done = false;
 	private DataOutputStream outToServer;
 	private ObjectInputStream objectInFromServer;
 	private Socket connection;
@@ -26,51 +27,61 @@ public class Client {
 		gui.addWindowListener(new Disconnect(gui, this));
 		
 		try {
-		connection = new Socket("localhost",3702);
+			connection = new Socket("localhost",3702);
 		
-		outToServer = new DataOutputStream(connection.getOutputStream());
+			outToServer = new DataOutputStream(connection.getOutputStream());
 		
-		objectInFromServer = new ObjectInputStream(connection.getInputStream());
-		ArrayList<SensorData> sensor = new ArrayList<SensorData>(); //Has all sensor data.
-		while(!done){
-			do{
-				Thread.sleep(500);
-				sensor.add((SensorData)objectInFromServer.readObject());		
-		
-				System.out.println(sensor.get(sensor.size()-1).humidity);
-				int temp = sensor.get(sensor.size()-1).temperature;
-				int hum = sensor.get(sensor.size()-1).humidity;
-				
-				gui.setTemperature(temp);
-				gui.setHumidity(hum);
-		
+			objectInFromServer = new ObjectInputStream(connection.getInputStream());
+			ArrayList<SensorData> sensor = new ArrayList<SensorData>(); //Has all sensor data.
+			while(true){
+				do{
+					Thread.sleep(500);
+					
+					sensor.add((SensorData)objectInFromServer.readObject());		
+			
+					System.out.println(sensor.get(sensor.size()-1).humidity);
+					
+					//Get readings
+					int temp = sensor.get(sensor.size()-1).temperature;
+					int hum = sensor.get(sensor.size()-1).humidity;
+					
+					//Convert to fahrenheit
+					double tempF = (temp * (9.0/5.0) + 32.0);
+					
+					//Set display
+					gui.setTemperature(tempF);
+					gui.setHumidity(hum);
+			
 			}while(objectInFromServer.available() <= 0);
 				
 		}
-
+		
 		}catch(IOException e)
 		{
-			
+			System.out.println("IO ERROR");
 		}catch(InterruptedException ie)
 		{
-			
+			System.out.println("ERROR");
 		}catch(ClassNotFoundException ce)
 		{
-			
+			System.out.println("Class Not Found ERROR");
 		}
 	}
 	
 	public static void main(String args[]) throws UnknownHostException, IOException, InterruptedException, ClassNotFoundException{
 		Client cli = new Client();
-		
 	}
 	
+	/*Disconnect from server*/
 	public void disconnect(){
 		try{
+			
 			outToServer.flush();
 			outToServer.writeBytes("Close\n");
 
 			//Close control socket
+			objectInFromServer.close();
+			outToServer.close();
 			connection.close();
 
 			//Exit host
@@ -78,14 +89,9 @@ public class Client {
 		}catch(IOException e)
 		{
 			System.out.println("ERROR");
-			System.exit(0);
 		}
 	}
-	
-	public void setDone(boolean status)
-	{
-		this.done = true;
-	}
+
 	
 
 }

@@ -1,16 +1,23 @@
+/*******************************************
+* Server.java
+* CIS 457-01
+* Dylan Shoup
+* Ali Scheffler
+* 
+* This class implements the server for IoT
+* system. Reads temperature and humidty
+* values from firebase and sends through
+* connection to client.
+*******************************************/
+
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -24,21 +31,14 @@ public class Server {
 	
 	public String sen;
 	
-	
-	public Server() throws IOException{
-		
-		
-	}
-	
 	public static void main(String args[]) throws IOException, InterruptedException{
 		ServerHandler handler = new ServerHandler();
 		handler.start();
+	}
 
 }
 
-}
-
-//Class for the ServerSocket thread and the Firebase data.
+/*Class for the ServerSocket thread and the Firebase data*/
 class ServerHandler extends Thread{
 	ServerSocket welcomeSocket;
 	public FBClass fb;
@@ -49,35 +49,39 @@ class ServerHandler extends Thread{
 	public void run(){
 		fb = new FBClass();
 		try {
+			//Get data from firebase
 			fb.getData();
 		} catch (InterruptedException | IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		while(true){
 			try {
+				//Create connection socket
 				Socket connectionSocket = welcomeSocket.accept();
 				System.out.println("Client Connected\n");
+				
+				//Start client handler
 				ClientHandler handler = new ClientHandler(connectionSocket, this);
 	            handler.start();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
 }
-//Thread for each client.
+/*Thread for each client.*/
 class ClientHandler extends Thread{
 	ServerHandler parent;
 	Socket connection;
 	
 	private ObjectOutputStream objectOutToClient;
 	private BufferedReader inFromClient;
+	
 	public ClientHandler(Socket connectionSocket, ServerHandler serv) throws IOException{
 		connection = connectionSocket;
 		parent = serv;
 		
+		//Create streams
 		inFromClient = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 		objectOutToClient = new ObjectOutputStream(connection.getOutputStream());
 	}
@@ -87,20 +91,21 @@ class ClientHandler extends Thread{
 		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 			
 			try {
+				//Write last object in Firebase to client
 				objectOutToClient.writeObject(parent.fb.sen.get(parent.fb.sen.size()-1));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		
 		try {
 			objectOutToClient.flush();
 			int size = parent.fb.sen.size();
+			
+			//Update client every second
 			while(!inFromClient.ready()){
 				Thread.sleep(1000);
 				int size2 = parent.fb.sen.size();
@@ -110,12 +115,14 @@ class ClientHandler extends Thread{
 					objectOutToClient.flush();
 				}
 			}
+			
+			//Client disconnected, close socket and streams
+			System.out.println("Client disconnected\n");
 			inFromClient.close();
 			objectOutToClient.close();
 			connection.close();
 			
 		} catch (IOException | InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -123,17 +130,13 @@ class ClientHandler extends Thread{
 class SensorData implements java.io.Serializable{
 	public int humidity;
 	public int temperature;
-	
-	public SensorData(){
-		
-	}
 }
 
 class FBClass{
 	ArrayList<SensorData> sen = new ArrayList<SensorData>();
 	public void getData() throws InterruptedException, IOException{
 		FileInputStream serviceAccount =
-				  new FileInputStream("C:\\Users\\shoup\\Documents\\CIS\\CIS457\\nodemcu-ac90a-firebase-adminsdk-d999q-4d2f43ad9c.json");//Change path!
+				  new FileInputStream("C:\\Users\\schef\\OneDrive\\Documents\\GitHub\\CIS457-Proj3\\nodemcu-ac90a-firebase-adminsdk-d999q-4d2f43ad9c.json");//Change path!
 
 				FirebaseOptions options = new FirebaseOptions.Builder()
 				  .setCredentials(GoogleCredentials.fromStream(serviceAccount))

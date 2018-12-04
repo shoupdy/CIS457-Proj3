@@ -20,7 +20,8 @@ public class Disconnect extends WindowAdapter {
 	
 	/*Call disconnect function on window closing event*/
 	public void windowClosing(WindowEvent e){
-		host.setDone(true);
+		
+		host.disconnect();
 	}
 
 	
