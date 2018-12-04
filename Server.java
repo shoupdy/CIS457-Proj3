@@ -127,13 +127,16 @@ class ClientHandler extends Thread{
 		}
 	}
 }
+/*Class that holds the an instance of data from the sensor.*/
 class SensorData implements java.io.Serializable{
 	public int humidity;
 	public int temperature;
 }
-
+/*Class used to set up the Firebase listener.*/
 class FBClass{
+	//List of SensorData objects for each value in the Firebase database.
 	ArrayList<SensorData> sen = new ArrayList<SensorData>();
+	/*Firebase listener*/
 	public void getData() throws InterruptedException, IOException{
 		FileInputStream serviceAccount =
 				  new FileInputStream("C:\\Users\\schef\\OneDrive\\Documents\\GitHub\\CIS457-Proj3\\nodemcu-ac90a-firebase-adminsdk-d999q-4d2f43ad9c.json");//Change path!
@@ -146,9 +149,10 @@ class FBClass{
 				FirebaseApp.initializeApp(options);
 		
 final FirebaseDatabase database = FirebaseDatabase.getInstance();
-		
+		//Get reference to database.
 		DatabaseReference ref = database.getReference("sensor/values");
 		ref.addValueEventListener(new ValueEventListener(){
+			//Trigger when values are changed.
 			@Override
 			  public void onDataChange(DataSnapshot dataSnapshot) {
 				if(dataSnapshot != null){
